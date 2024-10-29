@@ -60,6 +60,35 @@ git clone https://github.com/raspie10032/ComfyUI_RS_NAI_Local_Prompt_converter
 
 2. Restart ComfyUI
 
+## Example Workflow
+
+![Example Workflow](workflow_examples/example_workflow.png)
+
+*The workflow is embedded in the PNG metadata - just drag and drop the image to load it in ComfyUI*
+
+###Extensions Required for Example Workflow
+
+**ComfyUI-Manager**
+- https://github.com/ltdrdata/ComfyUI-Manager
+
+**ComfyUI Impact Pack**
+- https://github.com/ltdrdata/ComfyUI-Impact-Pack
+
+**Efficiency Nodes for ComfyUI Version 2.0+**
+- https://github.com/jags111/efficiency-nodes-comfyui
+
+**pythongosssss/ComfyUI-Custom-Scripts**
+- https://github.com/pythongosssss/ComfyUI-Custom-Scripts
+
+**UltimateSDUpscale**
+- https://github.com/ssitu/ComfyUI_UltimateSDUpscale
+
+**rgthree's ComfyUI Nodes**
+- https://github.com/rgthree/rgthree-comfy
+
+**Use Everywhere (UE Nodes)**
+- https://github.com/chrisgoringe/cg-use-everywhere
+
 ## Usage Rights
 This code is freely available for anyone to use, modify, and distribute without any restrictions. You can use it for any purpose, including personal and commercial projects.
 
