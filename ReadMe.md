@@ -55,7 +55,7 @@ Provides bidirectional conversion between NovelAI and ComfyUI prompt formats:
 1. Clone this repository into your ComfyUI's custom nodes directory:
 ```bash
 cd ComfyUI/custom_nodes
-git clone https://github.com/yourusername/comfyui-nai-prompt-converter
+git clone https://github.com/raspie10032/ComfyUI_RS_NAI_Local_Prompt_converter
 ```
 
 2. Restart ComfyUI
