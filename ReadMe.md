@@ -62,3 +62,19 @@ git clone https://github.com/raspie10032/ComfyUI_RS_NAI_Local_Prompt_converter
 
 ## Usage Rights
 This code is freely available for anyone to use, modify, and distribute without any restrictions. You can use it for any purpose, including personal and commercial projects.
+
+## Code References
+
+This project incorporates code and techniques from the following sources:
+
+### ComfyUI NAIDGenerator
+- Repository: https://github.com/bedovyy/ComfyUI_NAIDGenerator
+- Author: bedovyy
+- Used for: Prompt conversion functionality and base implementation
+
+### NovelAI Image Metadata
+- Repository: https://github.com/NovelAI/novelai-image-metadata
+- Author: NovelAI
+- Used for: LSB-based metadata extraction technique and stealth watermark handling
+
+Special thanks to the authors and contributors of these projects for their valuable work and making their code available to the community.

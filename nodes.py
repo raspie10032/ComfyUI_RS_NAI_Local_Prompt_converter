@@ -1,5 +1,5 @@
 """
-Implementation of NovelAI Prompt Extractor Node
+Implementation of NovelAI Prompt Extractor Node with LSB-based metadata extraction
 """
 import os
 import json
@@ -7,19 +7,67 @@ import numpy as np
 import torch
 from PIL import Image
 import folder_paths
-import logging
+import gzip
+from typing import Union
 
-# Logging configuration
-# logging.basicConfig(
-#     level=logging.INFO,
-#     format='%(asctime)s - %(levelname)s - %(message)s',
-#     filename='nai_extractor.log'
-# )
-# logger = logging.getLogger('NAIExtractor')
+def byteize(alpha):
+    alpha = alpha.T.reshape((-1,))
+    alpha = alpha[:(alpha.shape[0] // 8) * 8]
+    alpha = np.bitwise_and(alpha, 1)
+    alpha = alpha.reshape((-1, 8))
+    alpha = np.packbits(alpha, axis=1)
+    return alpha
+
+class LSBExtractor:
+    def __init__(self, data):
+        self.data = byteize(data[..., -1])
+        self.pos = 0
+
+    def get_one_byte(self):
+        byte = self.data[self.pos]
+        self.pos += 1
+        return byte
+
+    def get_next_n_bytes(self, n):
+        n_bytes = self.data[self.pos:self.pos + n]
+        self.pos += n
+        return bytearray(n_bytes)
+
+    def read_32bit_integer(self):
+        bytes_list = self.get_next_n_bytes(4)
+        if len(bytes_list) == 4:
+            integer_value = int.from_bytes(bytes_list, byteorder='big')
+            return integer_value
+        else:
+            return None
+
+def extract_image_metadata(image: Union[Image.Image, np.ndarray], get_fec: bool = False) -> dict:
+    if isinstance(image, Image.Image):
+        image = np.array(image.convert("RGBA"))
+    if image.shape[-1] != 4 or len(image.shape) != 3:
+        return None
+    
+    try:
+        reader = LSBExtractor(image)
+        magic = "stealth_pngcomp"
+        read_magic = reader.get_next_n_bytes(len(magic)).decode("utf-8")
+        if magic != read_magic:
+            return None
+        
+        read_len = reader.read_32bit_integer() // 8
+        json_data = reader.get_next_n_bytes(read_len)
+        json_data = json.loads(gzip.decompress(json_data).decode("utf-8"))
+        
+        if "Comment" in json_data and isinstance(json_data["Comment"], str):
+            json_data["Comment"] = json.loads(json_data["Comment"])
+        
+        return json_data
+    except Exception:
+        return None
 
 class NAIPromptExtractorNode:
     FUNCTION = "extract_nai_metadata"
-    CATEGORY = "prompt"  # changed to prompt category
+    CATEGORY = "prompt"
     RETURN_TYPES = ("STRING", "STRING", "STRING", "STRING", "STRING", "STRING", "STRING", "INT", "INT", "IMAGE")
     RETURN_NAMES = ("prompt", "negative_prompt", "seed", "steps", "sampler", "cfg_scale", "raw_metadata", "width", "height", "image")
     
@@ -48,8 +96,6 @@ class NAIPromptExtractorNode:
 
     def extract_nai_metadata(self, original_file, reload_files=False):
         try:
-            # logger.info(f"Processing started - Original file: {original_file}")
-            
             input_dir = folder_paths.get_input_directory()
             image_path = os.path.join(input_dir, original_file)
             
@@ -69,57 +115,28 @@ class NAIPromptExtractorNode:
             height = 0
             image_tensor = None
 
-            # Open image
+            # Open and process image
             with Image.open(image_path) as img:
-                # logger.info(f"Image loaded: {image_path}")
-                # logger.info(f"Image info: {list(img.info.keys())}")
-                
-                # Get image size
                 width, height = img.size
-                # logger.info(f"Image size: {width}x{height}")
-                
-                # Convert image to tensor
                 img_rgb = img.convert('RGB')
                 img_array = np.array(img_rgb).astype(np.float32) / 255.0
                 image_tensor = torch.from_numpy(img_array)[None,]
                 
-                # Extract Novel AI metadata
-                if 'Comment' in img.info:
-                    # logger.info("Novel AI metadata found")
-                    try:
-                        comment_data = img.info['Comment']
-                        # logger.info(f"Raw Comment data: {repr(comment_data)}")
-                        
-                        # Parse string or bytes to JSON
-                        if isinstance(comment_data, bytes):
-                            metadata = json.loads(comment_data.decode('utf-8'))
-                        else:
-                            metadata = json.loads(comment_data)
-                            
-                        raw_metadata = json.dumps(metadata, indent=2, ensure_ascii=False)
-                        # logger.info(f"Parsed metadata: {raw_metadata[:200]}...")
-                        
-                        prompt = metadata.get('prompt', 'N/A')
-                        negative_prompt = metadata.get('uc', 'N/A')
-                        seed = str(metadata.get('seed', 'N/A'))
-                        steps = str(metadata.get('steps', 'N/A'))
-                        sampler = metadata.get('sampler', 'N/A')
-                        cfg_scale = str(metadata.get('scale', 'N/A'))
-                        
-                        # logger.info("NAI metadata parsing successful")
-                    except Exception as e:
-                        print(f"NAI parsing error: {str(e)}")
-            
-            # logger.info(f"""Extracted results:
-            # Prompt: {prompt[:200]}...
-            # Negative prompt: {negative_prompt[:200]}...
-            # Seed: {seed}
-            # Steps: {steps}
-            # Sampler: {sampler}
-            # CFG: {cfg_scale}
-            # Size: {width}x{height}
-            # Image tensor: {image_tensor.shape if image_tensor is not None else 'None'}
-            # """)
+                # Extract metadata using LSB method
+                metadata = extract_image_metadata(img)
+                
+                if metadata:
+                    raw_metadata = json.dumps(metadata, indent=2, ensure_ascii=False)
+                    
+                    # Extract values from Comment if present
+                    if "Comment" in metadata:
+                        comment_data = metadata["Comment"]
+                        prompt = comment_data.get('prompt', 'N/A')
+                        negative_prompt = comment_data.get('uc', 'N/A')
+                        seed = str(comment_data.get('seed', 'N/A'))
+                        steps = str(comment_data.get('steps', 'N/A'))
+                        sampler = comment_data.get('sampler', 'N/A')
+                        cfg_scale = str(comment_data.get('scale', 'N/A'))
             
             return (
                 prompt,
