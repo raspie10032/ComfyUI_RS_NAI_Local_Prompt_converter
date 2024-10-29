@@ -66,7 +66,7 @@ git clone https://github.com/raspie10032/ComfyUI_RS_NAI_Local_Prompt_converter
 
 *The workflow is embedded in the PNG metadata - just drag and drop the image to load it in ComfyUI*
 
-###Extensions Required for Example Workflow
+### Extensions Required for Example Workflow
 
 **ComfyUI-Manager**
 - https://github.com/ltdrdata/ComfyUI-Manager
