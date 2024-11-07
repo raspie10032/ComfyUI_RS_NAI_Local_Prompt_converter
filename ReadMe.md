@@ -89,9 +89,6 @@ git clone https://github.com/raspie10032/ComfyUI_RS_NAI_Local_Prompt_converter
 **Use Everywhere (UE Nodes)**
 - https://github.com/chrisgoringe/cg-use-everywhere
 
-## Usage Rights
-This code is freely available for anyone to use, modify, and distribute without any restrictions. You can use it for any purpose, including personal and commercial projects.
-
 ## Code References
 
 This project incorporates code and techniques from the following sources:
