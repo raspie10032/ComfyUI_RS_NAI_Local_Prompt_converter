@@ -9,6 +9,6 @@ Repository = "https://github.com/raspie10032/ComfyUI_RS_NAI_Local_Prompt_convert
 #  Used by Comfy Registry https://comfyregistry.org
 
 [tool.comfy]
-PublisherId = ""
+PublisherId = "raspie10032"
 DisplayName = "ComfyUI_RS_NAI_Local_Prompt_converter"
 Icon = ""
