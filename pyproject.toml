@@ -1,0 +1,14 @@
+[project]
+name = "comfyui_rs_nai_local_prompt_converter"
+description = "A custom node extension for ComfyUI that enables conversion between NovelAI and ComfyUI prompt formats, along with extraction of NovelAI metadata from PNG images."
+version = "1.0.0"
+license = {file = "LICENSE"}
+
+[project.urls]
+Repository = "https://github.com/raspie10032/ComfyUI_RS_NAI_Local_Prompt_converter"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = "raspie10032"
+DisplayName = "ComfyUI_RS_NAI_Local_Prompt_converter"
+Icon = ""
