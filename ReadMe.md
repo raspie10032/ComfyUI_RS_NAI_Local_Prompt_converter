@@ -1,54 +1,61 @@
-# ComfyUI NAI Prompt Converter
+# ComfyUI Prompt Converter
 
-Original source code credit:
-The prompt_to_stack function is based on the code from:
-https://github.com/bedovyy/ComfyUI_NAIDGenerator/blob/master/utils.py#L146
-Author: bedovyy
-Modified for Novel AI to ComfyUI conversion purposes.
+Version 2.0.0
 
-This code was entirely created by Claude 3.5 Sonnet.
+A custom node extension for ComfyUI that enables conversion between different prompt formats: NovelAI V4, ComfyUI, and old NovelAI.
 
-A custom node extension for ComfyUI that enables conversion between NovelAI and ComfyUI prompt formats, along with extraction of NovelAI metadata from PNG images.
+## Major Changes in v2.0.0
+
+This version represents a complete rewrite of the extension with improved functionality:
+- Removed image metadata extraction features
+- Focused entirely on prompt conversion capabilities
+- Added support for NovelAI V4 format
+- More reliable conversion between different formats
+- Fixed issues with base64 encoding/decoding
 
 ## Features
 
-### NAI Prompt Extractor Node
-- Extracts metadata from NovelAI-generated PNG images including:
-  - Prompt
-  - Negative prompt
-  - Seed
-  - Steps
-  - Sampler
-  - CFG scale
-  - Raw metadata
-  - Image dimensions
-- Supports direct image upload through the UI
-- Specifically designed for PNG files with NovelAI metadata
-
 ### Prompt Format Conversion
-Provides bidirectional conversion between NovelAI and ComfyUI prompt formats:
 
-#### Novel AI → ComfyUI
-- Converts NovelAI's bracket-based emphasis notation to ComfyUI's weight format
-  - `{tag}` → `(tag:1.05)`
-  - `{{tag}}` → `(tag:1.10)`
-  - `[tag]` → `(tag:0.95)`
-  - `[[tag]]` → `(tag:0.90)`
+This extension provides conversion between multiple prompt formats:
 
-#### ComfyUI → Novel AI
-- Converts ComfyUI's weight format to NovelAI's bracket notation
-  - `(tag:1.05)` → `{tag}`
-  - `(tag:1.10)` → `{{tag}}`
-  - `(tag:0.95)` → `[tag]`
-  - `(tag:0.90)` → `[[tag]]`
+#### ComfyUI → NovelAI V4
+- Converts ComfyUI's weight format to NovelAI V4 format
+  - `(tag:1.05)` → `1.05::tag::`
+  - `(multiple tags:1.1)` → `1.1::multiple tags::`
 
-### Special Tag Handling
-- Preserves character tags in various formats:
-  - Basic: `character (series)`
-  - With options: `character (series) (outfit) (pose)`
-  - Underscore format: `character_(series)`
-  - Escaped format: `character \(series\)`
-- Maintains correct formatting for `artist:` tags
+#### NovelAI V4 → ComfyUI
+- Converts NovelAI V4 format to ComfyUI's weight format
+  - `1.05::tag::` → `(tag:1.05)`
+  - `1.1::multiple tags::` → `(multiple tags:1.1)`
+
+#### NovelAI V4 → Old NovelAI
+- Converts NovelAI V4 format to old NovelAI's bracket notation
+  - `1.05::tag::` → `{tag}`
+  - `1.1::tag::` → `{{tag}}`
+  - `0.95::tag::` → `[tag]`
+  - `0.9::tag::` → `[[tag]]`
+- Uses logarithmic function to determine the appropriate number of brackets based on the weight value
+
+#### Old NovelAI → NovelAI V4
+- Converts old NovelAI's bracket notation to NovelAI V4 format
+  - `{tag}` → `1.05::tag::`
+  - `{{tag}}` → `1.1::tag::`
+  - `[tag]` → `0.95::tag::`
+  - `[[tag]]` → `0.9::tag::`
+- Uses logarithmic function to calculate precise weight values based on number of brackets
+
+### Special Handling
+- Proper handling of escaped parentheses
+- Maintains proper tag spacing and formatting
+- Improved handling of complex prompts with nested structures
+
+### Limitations
+- Direct conversion between ComfyUI and Old NovelAI formats is not supported
+- To convert between ComfyUI and Old NovelAI, use NovelAI V4 as an intermediate format
+- **Mixed prompt formats are not supported** - Each converter expects input in a single, consistent format
+- The converters cannot process strings containing a mix of ComfyUI, Old NovelAI, and NovelAI V4 formats
+- Each prompt must be fully converted to a specific format before using another converter
 
 ## Installation
 
@@ -60,34 +67,34 @@ git clone https://github.com/raspie10032/ComfyUI_RS_NAI_Local_Prompt_converter
 
 2. Restart ComfyUI
 
-## Example Workflow
+## Usage
 
-![Example Workflow](workflow_examples/example_workflow.png)
+After installation, four new nodes will be available in the prompt category:
+- **Convert ComfyUI to Novel AI V4**
+- **Convert Novel AI V4 to ComfyUI**
+- **Convert Novel AI V4 to Old NAI**
+- **Convert Old NAI to Novel AI V4**
 
-*The workflow is embedded in the PNG metadata - just drag and drop the image to load it in ComfyUI*
+Simply connect your prompt to the appropriate conversion node to transform between formats.
 
-### Extensions Required for Example Workflow
+### Important Note About Backward Compatibility
 
-**ComfyUI-Manager**
-- https://github.com/ltdrdata/ComfyUI-Manager
+**Version 2.0.0 is NOT backward compatible with version 1.x**
 
-**ComfyUI Impact Pack**
-- https://github.com/ltdrdata/ComfyUI-Impact-Pack
+- Existing workflows using v1.x nodes will need to be rebuilt using the new v2.0.0 nodes
+- The node names and functionality have changed completely
+- If you were using version 1.x for extracting metadata from NovelAI-generated images, please note that this functionality has been completely removed in version 2.0.0
 
-**Efficiency Nodes for ComfyUI Version 2.0+**
-- https://github.com/jags111/efficiency-nodes-comfyui
+## Notes
 
-**pythongosssss/ComfyUI-Custom-Scripts**
-- https://github.com/pythongosssss/ComfyUI-Custom-Scripts
+- This extension focuses solely on prompt format conversion
+- The previous image metadata extraction functionality has been removed
+- The extension is now more reliable and handles complex cases better
+- To convert between ComfyUI and Old NovelAI formats, you'll need to use two conversion steps with NovelAI V4 as an intermediate format
 
-**UltimateSDUpscale**
-- https://github.com/ssitu/ComfyUI_UltimateSDUpscale
+## Development
 
-**rgthree's ComfyUI Nodes**
-- https://github.com/rgthree/rgthree-comfy
-
-**Use Everywhere (UE Nodes)**
-- https://github.com/chrisgoringe/cg-use-everywhere
+Created by Claude and Google Gemini, maintained by raspie10032. The code was rewritten from scratch in v2.0.0 to improve reliability and add support for new formats.
 
 ## Code References
 
@@ -98,9 +105,8 @@ This project incorporates code and techniques from the following sources:
 - Author: bedovyy
 - Used for: Prompt conversion functionality and base implementation
 
-### NovelAI Image Metadata
-- Repository: https://github.com/NovelAI/novelai-image-metadata
-- Author: NovelAI
-- Used for: LSB-based metadata extraction technique and stealth watermark handling
-
 Special thanks to the authors and contributors of these projects for their valuable work and making their code available to the community.
+
+## License
+
+This project is available under the MIT License.
